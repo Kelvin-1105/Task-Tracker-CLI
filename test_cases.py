@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch
-from unittest.mock import MagicMock
 import task_tracker
 
 class TestMain(unittest.TestCase):
@@ -112,6 +111,10 @@ class TestMain(unittest.TestCase):
     @patch.object(task_tracker, 'read_from_file', return_value = None)
     def test_find_id_2(self, mock_method):
         self.assertEqual(task_tracker.find_id("tasks.json"), 1)
+    
+    @patch.object(task_tracker, 'read_from_file', return_value = [])
+    def test_find_id_3(self, mock_method):
+        self.assertEqual(task_tracker.find_id("tasks.json"), 1)
 
 ##############################
 # def file_exists(file) -> bool:
@@ -126,5 +129,28 @@ class TestMain(unittest.TestCase):
         mock_file.return_value = False
         self.assertFalse(task_tracker.file_exists("tasks.json"))
 
+##############################
+# def file_empty(file) -> bool:
+##############################
+    @patch.object(task_tracker, 'file_empty', return_value = [])
+    def test_file_empty(self, mock_file):
+        self.assertFalse(task_tracker.file_empty('tasks.json'))
+
+    @patch.object(task_tracker, 'file_empty', return_value = None)
+    def test_file_empty_2(self, mock_file):
+        self.assertFalse(task_tracker.file_empty('tasks.json'))   
+
+    @patch.object(task_tracker, 'file_empty', return_value = [{'id':1}])
+    def test_file_empty_3(self, mock_file):
+        self.assertTrue(task_tracker.file_empty('tasks.json'))
+
+##############################
+# def is_empty(tasks) -> bool:
+##############################
+    def test_is_empty(self):
+        self.assertTrue(task_tracker.is_empty([]))
+    
+    def test_is_empty_2(self):
+        self.assertFalse(task_tracker.is_empty([{'id':1}]))
 if __name__ == "__main__":
     unittest.main()

@@ -4,10 +4,14 @@ import os.path
 import datetime
 
 
-def main():
+def main() -> None:
 	file = "tasks.json"
-	curr_id = find_id(file) if file_exists(file) else 1
-	
+	if file_exists(file) and not file_empty(file):
+		curr_id = find_id(file)
+	else:
+		write_to_file(file, [])
+		curr_id = 1
+
 	keyword, change_idx, description = breakdown_input(get_input())
 	if keyword == 'add':
 		curr_time = datetime.datetime.now()
@@ -23,19 +27,26 @@ def main():
 		merged_tasks = merge_tasks(file_tasks, new_task)
 		write_to_file(file, merged_tasks)
 
-def merge_tasks(file_tasks, new_task) -> list: 
+def file_empty(file) -> bool:
+	tasks = read_from_file(file)
+	return is_empty(tasks)
+
+def is_empty(tasks) -> bool:
+	return not tasks
+
+def merge_tasks(file_tasks, new_task) -> list:
 	file_tasks.append(new_task)
 	return file_tasks
 
 def find_id(file) -> int|None: 
 	tasks = read_from_file(file)
-	if not tasks:
+	if is_empty(tasks):
 		return 1
-	idx = 0
+	max_idx = 0
 	for task in tasks:
-		if task["id"] > idx:
-			idx = task["id"] + 1
-	return idx
+		if task["id"] > max_idx:
+			max_idx = task["id"]
+	return max_idx + 1
 
 def file_exists(file) -> bool: 
 	if not os.path.isfile(file):
@@ -67,11 +78,11 @@ def breakdown_keyword(user_input) -> str|None:
 	keyword = re.match(r'^\w+', user_input)
 	return None if not keyword else keyword.group(0)
 
-def write_to_file(file, data): 
+def write_to_file(file, data) -> None: 
 	with open(file, 'w') as f:
 		json.dump(data, f, indent=2)
 
-def read_from_file(file): 
+def read_from_file(file) -> list|None: 
 	with open(file, 'r') as f: 
 		return json.load(f)
 
