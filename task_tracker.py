@@ -2,12 +2,20 @@ import json
 import re
 import os.path
 import datetime
-
-
+'''
+todo list:
+done	preserve .json when running test_cases.py
+ip		listing - done, todo, in-progress
+		updating progress
+		dealing with None - try-error blocks
+		deleting tasks
+		printing output
+		updating description
+'''
 def main() -> None:
-	file = "tasks.json"
+	file = "tasks.json" # if change, change in test_cases 
 	if file_exists(file) and not file_empty(file):
-		curr_id = find_id(file)
+		curr_id = find_id(file) + 1
 	else:
 		write_to_file(file, [])
 		curr_id = 1
@@ -40,13 +48,11 @@ def merge_tasks(file_tasks, new_task) -> list:
 
 def find_id(file) -> int|None: 
 	tasks = read_from_file(file)
-	if is_empty(tasks):
-		return 1
 	max_idx = 0
 	for task in tasks:
 		if task["id"] > max_idx:
 			max_idx = task["id"]
-	return max_idx + 1
+	return max_idx
 
 def file_exists(file) -> bool: 
 	if not os.path.isfile(file):

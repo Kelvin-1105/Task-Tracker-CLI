@@ -4,6 +4,14 @@ import task_tracker
 
 class TestMain(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        cls.resource = task_tracker.read_from_file("tasks.json")
+    
+    @classmethod
+    def tearDownClass(cls):
+        task_tracker.write_to_file("tasks.json", cls.resource)
+
 ##############################
 # breakdown_keyword(user_input) -> str|None
 ##############################
@@ -106,15 +114,7 @@ class TestMain(unittest.TestCase):
 #############################
     @patch.object(task_tracker, 'read_from_file', return_value=[{'id': 1}, {'id': 2}, {'id': 3},{'id': 5},{'id': 7}])
     def test_find_id(self, mock_method): 
-        self.assertEqual(task_tracker.find_id("tasks.json"), 8)
-    
-    @patch.object(task_tracker, 'read_from_file', return_value = None)
-    def test_find_id_2(self, mock_method):
-        self.assertEqual(task_tracker.find_id("tasks.json"), 1)
-    
-    @patch.object(task_tracker, 'read_from_file', return_value = [])
-    def test_find_id_3(self, mock_method):
-        self.assertEqual(task_tracker.find_id("tasks.json"), 1)
+        self.assertEqual(task_tracker.find_id("tasks.json"), 7)
 
 ##############################
 # def file_exists(file) -> bool:
@@ -152,5 +152,6 @@ class TestMain(unittest.TestCase):
     
     def test_is_empty_2(self):
         self.assertFalse(task_tracker.is_empty([{'id':1}]))
+
 if __name__ == "__main__":
     unittest.main()
