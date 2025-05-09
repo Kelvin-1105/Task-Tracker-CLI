@@ -183,5 +183,13 @@ class TestMain(unittest.TestCase):
     def test_mark_task_2(self):
         self.assertEqual(task_tracker.mark_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 1, 'in-progress'), [{'id': 1, 'status': 'in-progress'}, {'id': 3, 'status': 'in-progress'}])
 
+##############################
+# def delete_task(file_tasks: list, change_idx) -> list:
+##############################
+    def test_delete_task(self):
+        self.assertEqual(task_tracker.delete_task([{'id': 1}, {'id': 2}, {'id': 3}], 2), [{'id': 1}, {'id': 3}])
+
+    def test_delete_task_2(self):
+        self.assertEqual(task_tracker.delete_task([{'id': 1}, {'id': 2}, {'id': 3}], 1), [{'id': 2}, {'id': 3}])
 if __name__ == "__main__":
     unittest.main()

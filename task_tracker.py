@@ -26,9 +26,11 @@ def main() -> None:
 			merged_tasks = merge_tasks(file_tasks, new_task)
 			write_to_file(file, merged_tasks)
 			curr_id += 1 
+
 		elif primary_keyword == 'list':
 			tasks_dict = list_tasks(file, secondary_keyword)
 			print_tasks(tasks_dict)
+
 		elif primary_keyword == 'mark':
 			if empty_variable([change_idx, secondary_keyword]):
 				raise TypeError("Index or Secondary keyword is null")
@@ -36,10 +38,23 @@ def main() -> None:
 			arranged_tasks = mark_task(file_tasks, change_idx, secondary_keyword)
 			write_to_file(file, arranged_tasks)
 
+		elif primary_keyword == 'delete':
+			if empty_variable(change_idx):
+				raise TypeError("Index is null")
+			file_tasks = read_from_file(file)
+			arranged_tasks = delete_task(file_tasks, change_idx)
+			write_to_file(file, arranged_tasks)
+
 		elif primary_keyword == 'esc':
 			exit()
 		else:
 			print("Invalid Input")
+
+def delete_task(file_tasks: list, change_idx) -> list:
+	for i in range(0, len(file_tasks)-1):
+		if file_tasks[i]['id'] == change_idx:
+			del file_tasks[i]
+	return file_tasks
 
 def mark_task(file_tasks, change_idx, secondary_keyword) -> list:
 	for task in file_tasks:
