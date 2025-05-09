@@ -4,35 +4,43 @@ import task_tracker
 
 class TestMain(unittest.TestCase):
 
+# Save .json contents 
     @classmethod
     def setUpClass(cls):
         cls.resource = task_tracker.read_from_file("tasks.json")
-    
+
+# Rewrite original .json contents 
     @classmethod
     def tearDownClass(cls):
         task_tracker.write_to_file("tasks.json", cls.resource)
 
 ##############################
-# breakdown_keyword(user_input) -> str|None
+# breakdown_keywords(user_input) -> str|None
 ##############################
     def test_breakdown_keyword(self):
-        self.assertEqual(task_tracker.breakdown_keyword(''), None)
-        
-    def test_breakdown_keyword_2(self):
-        self.assertEqual(task_tracker.breakdown_keyword("add \"task\""), "add")
+        self.assertEqual(task_tracker.breakdown_keywords("1111111"), (None, None))
 
-    def test_breakdown_keyword_3(self):
-        self.assertEqual(task_tracker.breakdown_keyword("update 1 'new task'"), "update")
+    def test_breakdown_keywords_2(self):
+        self.assertEqual(task_tracker.breakdown_keywords("add \"task\""), ("add", None))
 
-    def test_breakdown_keyword_4(self):
-        self.assertEqual(task_tracker.breakdown_keyword("delete 1"), "delete")
+    def test_breakdown_keywords_3(self):
+        self.assertEqual(task_tracker.breakdown_keywords("update 1 'new task'"), ("update", None))
+
+    def test_breakdown_keywords_4(self):
+        self.assertEqual(task_tracker.breakdown_keywords("delete 1"), ("delete", None))
     
+    def test_breakdown_keywords_5(self):
+        self.assertEqual(task_tracker.breakdown_keywords("list done"), ("list", 'done'))
+
+    def test_breakdown_keywords_6(self):
+        self.assertEqual(task_tracker.breakdown_keywords("list in-progress"), ("list", 'in-progress'))
+
+    def test_breakdown_keywords_7(self):
+        self.assertEqual(task_tracker.breakdown_keywords("mark in-progress 1"), ("mark", 'in-progress'))
+
 ##############################
 # breakdown_idx(user_input) -> int|None
 ##############################
-    def test_breakdown_idx(self):
-        self.assertEqual(task_tracker.breakdown_idx(''), None)
-        
     def test_breakdown_idx_2(self):
         self.assertEqual(task_tracker.breakdown_idx("add \"task\""), None)
 
@@ -41,13 +49,16 @@ class TestMain(unittest.TestCase):
 
     def test_breakdown_idx_4(self):
         self.assertEqual(task_tracker.breakdown_idx("delete 1"), 1)
+    
+    def test_breakdown_idx_5(self):
+        self.assertEqual(task_tracker.breakdown_idx("mark in-progress 7"), 7)
+
+    def test_breakdown_idx_6(self):
+        self.assertEqual(task_tracker.breakdown_idx("mark done 3"), 3)
 
 ##############################
 # breakdown_description(user_input) -> str|None
 ##############################
-    def test_breakdown_description(self):
-        self.assertEqual(task_tracker.breakdown_description(''), None)
-        
     def test_breakdown_description_2(self):
         self.assertEqual(task_tracker.breakdown_description("add \"task\""), "task")
 
@@ -61,13 +72,23 @@ class TestMain(unittest.TestCase):
 # breakdown_input(user_input) -> list[str|None, int|None, str|None]
 ##############################
     def test_breakdown_input(self):
-        self.assertEqual(task_tracker.breakdown_input("add \"Groceries\""), ('add', None, 'Groceries'))
+        self.assertEqual(task_tracker.breakdown_input("add \"Groceries\""), ('add', None, None, 'Groceries'))
 
     def test_breakdown_input_2(self):
-        self.assertEqual(task_tracker.breakdown_input("update 1 \"new task\""), ('update', 1, 'new task'))
+        self.assertEqual(task_tracker.breakdown_input("update 1 \"new task\""), ('update', None, 1, 'new task'))
     
-    def test_breakdown_input3(self):
-        self.assertEqual(task_tracker.breakdown_input("delete 1"), ('delete', 1, None))
+    def test_breakdown_input_3(self):
+        self.assertEqual(task_tracker.breakdown_input("delete 1"), ('delete', None, 1, None))
+
+    def test_breakdown_input_4(self):
+        self.assertEqual(task_tracker.breakdown_input("mark in-progress 7"), ('mark', 'in-progress', 7, None))
+
+    def test_breakdown_input_5(self):
+        self.assertEqual(task_tracker.breakdown_input("mark done 3"), ('mark', 'done', 3, None))
+
+    def test_breakdown_input_6(self):
+        self.assertEqual(task_tracker.breakdown_input("list in-progress"), ('list', 'in-progress', None, None))
+
 ##############################
 # def merge_tasks(file_tasks, new_task) -> list: 
 ##############################
@@ -152,6 +173,15 @@ class TestMain(unittest.TestCase):
     
     def test_is_empty_2(self):
         self.assertFalse(task_tracker.is_empty([{'id':1}]))
+
+##############################
+# def is_empty(tasks) -> bool:
+##############################
+    def test_mark_task(self):
+        self.assertEqual(task_tracker.mark_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 3, 'done'), [{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'done'}])
+
+    def test_mark_task_2(self):
+        self.assertEqual(task_tracker.mark_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 1, 'in-progress'), [{'id': 1, 'status': 'in-progress'}, {'id': 3, 'status': 'in-progress'}])
 
 if __name__ == "__main__":
     unittest.main()
