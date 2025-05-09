@@ -177,17 +177,21 @@ class TestMain(unittest.TestCase):
 ##############################
 # def update_task(file_tasks, change_idx, data_change, key) -> list:
 ##############################
-    def test_mark_task(self):
-        self.assertEqual(task_tracker.update_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 3, 'done', 'status'), [{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'done'}])
+    @patch.object(task_tracker, 'get_time', return_value='May 09 2025 13:17:01')
+    def test_update_task(self, mock_method):
+        self.assertEqual(task_tracker.update_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 3, 'done', 'status'), [{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'done', 'updatedAt': 'May 09 2025 13:17:01'}])
 
-    def test_mark_task_2(self):
-        self.assertEqual(task_tracker.update_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 1, 'in-progress', 'status'), [{'id': 1, 'status': 'in-progress'}, {'id': 3, 'status': 'in-progress'}])
+    @patch.object(task_tracker, 'get_time', return_value='May 09 2025 13:17:01')
+    def test_update_task_2(self, mock_method):
+        self.assertEqual(task_tracker.update_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 1, 'in-progress', 'status'), [{'id': 1, 'status': 'in-progress', 'updatedAt': 'May 09 2025 13:17:01'}, {'id': 3, 'status': 'in-progress'}])
     
-    def test_mark_task_3(self):
-        self.assertEqual(task_tracker.update_task([{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car'}], 1, 'groceries and pharmacy', 'description'), [{'id': 1, 'description': 'groceries and pharmacy'}, {'id': 3, 'description': 'wash car'}])
+    @patch.object(task_tracker, 'get_time', return_value='May 09 2025 13:17:01')
+    def test_update_task_3(self, mock_method):
+        self.assertEqual(task_tracker.update_task([{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car'}], 1, 'groceries and pharmacy', 'description'), [{'id': 1, 'description': 'groceries and pharmacy', 'updatedAt': 'May 09 2025 13:17:01'}, {'id': 3, 'description': 'wash car'}])
    
-    def test_mark_task_4(self):
-        self.assertEqual(task_tracker.update_task([{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car'}], 3, 'wash car and clean interior', 'description'), [{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car and clean interior'}])
+    @patch.object(task_tracker, 'get_time', return_value='May 09 2025 13:17:01')
+    def test_update_task_4(self, mock_method):
+        self.assertEqual(task_tracker.update_task([{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car'}], 3, 'wash car and clean interior', 'description'), [{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car and clean interior', 'updatedAt': 'May 09 2025 13:17:01'}])
 
 ##############################
 # def delete_task(file_tasks: list, change_idx) -> list:

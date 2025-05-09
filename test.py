@@ -1,10 +1,7 @@
-tasks = [{'status': 'thing', 'id': 1, 'description': 'first thing'}, 
-		 {'status': 'not thing', 'id': 2, 'description': 'second thing'}]
-task_dict = {}
-for task in tasks:
-	if task['status'] in ['thing', 'not thing']:
-		task_dict[task['id']] = task['description']
+import datetime 
 
-for idx, description in task_dict.items():
-	print(f'{idx}. {description}')
+time = datetime.datetime.now()
+print(repr(time))
+print(type(time))
 
+# print(datetime.datetime.now().strftime("%b %d %Y %H:%M:%S"))

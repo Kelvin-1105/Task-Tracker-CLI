@@ -5,9 +5,10 @@ import datetime
 '''
 todo list:
 		printing output
+		index out of bounds error
 '''
 def main() -> None:
-	file = "tasks.json" # if change, change in test_cases 
+	file = "tasks.json" # if change, change in test_cases.py
 	if file_exists(file) and not file_empty(file):
 		curr_id = find_id(file) + 1
 	else:
@@ -15,44 +16,60 @@ def main() -> None:
 		curr_id = 1
 
 	while True:
-		primary_keyword, secondary_keyword, change_idx, description = breakdown_input(get_input())
-		
-		if primary_keyword == 'add':
-			if empty_variable([description]):
-				raise TypeError("Description is null")
-			new_task = add_task(description, curr_id)
-			file_tasks = read_from_file(file)
-			merged_tasks = merge_tasks(file_tasks, new_task)
-			write_to_file(file, merged_tasks)
-			curr_id += 1 
+		try:
+			primary_keyword, secondary_keyword, change_idx, description = breakdown_input(get_input())
+			
+			if primary_keyword == 'add':
+				if empty_variable([description]):
+					raise TypeError(f"Description={description}, invalid input")
+				
+				new_task = add_task(description, curr_id)
+				file_tasks = read_from_file(file)
+				merged_tasks = merge_tasks(file_tasks, new_task)
 
-		elif primary_keyword == 'list':
-			tasks_dict = list_tasks(file, secondary_keyword)
-			print_tasks(tasks_dict)
+				write_to_file(file, merged_tasks)
+				print(f'Task added successfully (ID: {curr_id})')
+				curr_id += 1 
 
-		elif primary_keyword == 'mark':
-			if empty_variable([change_idx, secondary_keyword]):
-				raise TypeError("Index or Secondary keyword is null")
-			file_tasks = read_from_file(file)
-			arranged_tasks = update_task(file_tasks, change_idx, secondary_keyword, 'status')
-			write_to_file(file, arranged_tasks)
+			elif primary_keyword == 'update':
+				if empty_variable([change_idx, description]):
+					raise TypeError(f"Index={change_idx} or Description={description}, invalid input")
+				
+				file_tasks = read_from_file(file)
+				arranged_tasks = update_task(file_tasks, change_idx, description, 'description')
+				write_to_file(file, arranged_tasks)
+				print(f'Task updated (ID: {change_idx})')
 
-		elif primary_keyword == 'delete':
-			if empty_variable(change_idx):
-				raise TypeError("Index is null")
-			file_tasks = read_from_file(file)
-			arranged_tasks = delete_task(file_tasks, change_idx)
-			write_to_file(file, arranged_tasks)
+			elif primary_keyword == 'mark':
+				if empty_variable([change_idx, secondary_keyword]):
+					raise TypeError(f"index={change_idx} or secondary_keyword={secondary_keyword}, invalid input")
+				
+				file_tasks = read_from_file(file)
+				arranged_tasks = update_task(file_tasks, change_idx, secondary_keyword, 'status')
+				write_to_file(file, arranged_tasks)
+				print(f'Task updated (ID: {change_idx})')
 
-		elif primary_keyword == 'update':
-			if empty_variable([change_idx, description]):
-				raise TypeError("Index or Description is null")
-			file_tasks = read_from_file(file)
-			arranged_tasks = update_task(file_tasks, change_idx, description, 'description')
-		elif primary_keyword == 'esc':
-			exit()
-		else:
-			print("Invalid Input")
+			elif primary_keyword == 'delete':
+				if empty_variable(change_idx):
+					raise TypeError(f"Index={change_idx}, invalid input")		
+				
+				file_tasks = read_from_file(file)
+				arranged_tasks = delete_task(file_tasks, change_idx)
+				write_to_file(file, arranged_tasks)	
+				print(f'Task deleted')
+
+			elif primary_keyword == 'list':
+				tasks_dict = list_tasks(file, secondary_keyword)
+				print_tasks(tasks_dict)
+
+			elif primary_keyword == 'esc':
+				exit()
+
+			else:
+				raise TypeError(f"primary_keyword={primary_keyword}, invalid input")
+			
+		except TypeError as e:
+			print(str(e))
 
 def delete_task(file_tasks: list, change_idx) -> list:
 	for i in range(0, len(file_tasks)-1):
@@ -63,8 +80,14 @@ def delete_task(file_tasks: list, change_idx) -> list:
 def update_task(file_tasks, change_idx, data_change, key) -> list:
 	for task in file_tasks:
 		if task['id'] == change_idx:
+			formatted_time = get_time()
 			task[key] = data_change
+			task['updatedAt'] = formatted_time
 	return file_tasks
+
+def get_time():
+	curr_time = datetime.datetime.now()
+	return curr_time.strftime("%b %d %Y %H:%M:%S")
 
 def empty_variable(necessary_input_list: list):
 	for necessary_input in necessary_input_list:
@@ -73,13 +96,13 @@ def empty_variable(necessary_input_list: list):
 	return False
 
 def add_task(description, curr_id) -> dict:
-	curr_time = datetime.datetime.now()
+	formatted_time = get_time()
 	new_task = {
 		"id": curr_id,
 		"description": description,
 		"status": "todo",
-		"createdAt": curr_time.strftime("%b %d %Y %H:%M:%S"),
-		"updatedAt": curr_time.strftime("%b %d %Y %H:%M:%S")
+		"createdAt": formatted_time,
+		"updatedAt": formatted_time
 	}
 	return new_task
 
@@ -93,7 +116,7 @@ def list_tasks(file, secondary_keyword) -> dict:
 	if secondary_keyword == None:
 		secondary_keyword = ['done', 'todo', 'in-progress']
 	elif secondary_keyword not in ['done', 'todo', 'in-progress']:
-		raise TypeError("Invalid Input")
+		raise TypeError(f"secondary_keyword={secondary_keyword} is an invalid input")
 	task_dict = {}
 	for task in tasks:
 		if task['status'] in secondary_keyword:
@@ -161,7 +184,7 @@ def breakdown_keywords(user_input) -> list[str|None, str|None]:
 	# regex - matches first word
 	primary_keyword = re.match(r'^[a-z]+', user_input)
 	try:
-		cleaned = re.sub(r'^\w+', '', user_input) # strip first word
+		cleaned = re.sub(r'^[a-z]+', '', user_input) # strip first word
 		cleaned = re.sub(r'^\s', '', cleaned) # strip whitespace after first word
 		secondary_keyword = re.match(r'^[a-z]+(?:-\w+)*', cleaned)
 	except:
