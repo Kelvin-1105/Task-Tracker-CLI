@@ -4,9 +4,7 @@ import os.path
 import datetime
 '''
 todo list:
-		deleting tasks
 		printing output
-		updating description
 '''
 def main() -> None:
 	file = "tasks.json" # if change, change in test_cases 
@@ -18,6 +16,7 @@ def main() -> None:
 
 	while True:
 		primary_keyword, secondary_keyword, change_idx, description = breakdown_input(get_input())
+		
 		if primary_keyword == 'add':
 			if empty_variable([description]):
 				raise TypeError("Description is null")
@@ -35,7 +34,7 @@ def main() -> None:
 			if empty_variable([change_idx, secondary_keyword]):
 				raise TypeError("Index or Secondary keyword is null")
 			file_tasks = read_from_file(file)
-			arranged_tasks = mark_task(file_tasks, change_idx, secondary_keyword)
+			arranged_tasks = update_task(file_tasks, change_idx, secondary_keyword, 'status')
 			write_to_file(file, arranged_tasks)
 
 		elif primary_keyword == 'delete':
@@ -45,6 +44,11 @@ def main() -> None:
 			arranged_tasks = delete_task(file_tasks, change_idx)
 			write_to_file(file, arranged_tasks)
 
+		elif primary_keyword == 'update':
+			if empty_variable([change_idx, description]):
+				raise TypeError("Index or Description is null")
+			file_tasks = read_from_file(file)
+			arranged_tasks = update_task(file_tasks, change_idx, description, 'description')
 		elif primary_keyword == 'esc':
 			exit()
 		else:
@@ -56,10 +60,10 @@ def delete_task(file_tasks: list, change_idx) -> list:
 			del file_tasks[i]
 	return file_tasks
 
-def mark_task(file_tasks, change_idx, secondary_keyword) -> list:
+def update_task(file_tasks, change_idx, data_change, key) -> list:
 	for task in file_tasks:
 		if task['id'] == change_idx:
-			task['status'] = secondary_keyword
+			task[key] = data_change
 	return file_tasks
 
 def empty_variable(necessary_input_list: list):

@@ -175,13 +175,19 @@ class TestMain(unittest.TestCase):
         self.assertFalse(task_tracker.is_empty([{'id':1}]))
 
 ##############################
-# def is_empty(tasks) -> bool:
+# def update_task(file_tasks, change_idx, data_change, key) -> list:
 ##############################
     def test_mark_task(self):
-        self.assertEqual(task_tracker.mark_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 3, 'done'), [{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'done'}])
+        self.assertEqual(task_tracker.update_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 3, 'done', 'status'), [{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'done'}])
 
     def test_mark_task_2(self):
-        self.assertEqual(task_tracker.mark_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 1, 'in-progress'), [{'id': 1, 'status': 'in-progress'}, {'id': 3, 'status': 'in-progress'}])
+        self.assertEqual(task_tracker.update_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 1, 'in-progress', 'status'), [{'id': 1, 'status': 'in-progress'}, {'id': 3, 'status': 'in-progress'}])
+    
+    def test_mark_task_3(self):
+        self.assertEqual(task_tracker.update_task([{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car'}], 1, 'groceries and pharmacy', 'description'), [{'id': 1, 'description': 'groceries and pharmacy'}, {'id': 3, 'description': 'wash car'}])
+   
+    def test_mark_task_4(self):
+        self.assertEqual(task_tracker.update_task([{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car'}], 3, 'wash car and clean interior', 'description'), [{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car and clean interior'}])
 
 ##############################
 # def delete_task(file_tasks: list, change_idx) -> list:
@@ -191,5 +197,6 @@ class TestMain(unittest.TestCase):
 
     def test_delete_task_2(self):
         self.assertEqual(task_tracker.delete_task([{'id': 1}, {'id': 2}, {'id': 3}], 1), [{'id': 2}, {'id': 3}])
+        
 if __name__ == "__main__":
     unittest.main()
