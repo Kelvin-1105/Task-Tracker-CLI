@@ -153,26 +153,17 @@ class TestMain(unittest.TestCase):
 ##############################
 # def file_empty(file) -> bool:
 ##############################
-    @patch.object(task_tracker, 'file_empty', return_value = [])
+    @patch.object(task_tracker, 'read_from_file', return_value = [])
     def test_file_empty(self, mock_file):
-        self.assertFalse(task_tracker.file_empty('tasks.json'))
-
-    @patch.object(task_tracker, 'file_empty', return_value = None)
-    def test_file_empty_2(self, mock_file):
-        self.assertFalse(task_tracker.file_empty('tasks.json'))   
-
-    @patch.object(task_tracker, 'file_empty', return_value = [{'id':1}])
-    def test_file_empty_3(self, mock_file):
         self.assertTrue(task_tracker.file_empty('tasks.json'))
 
-##############################
-# def is_empty(tasks) -> bool:
-##############################
-    def test_is_empty(self):
-        self.assertTrue(task_tracker.is_empty([]))
-    
-    def test_is_empty_2(self):
-        self.assertFalse(task_tracker.is_empty([{'id':1}]))
+    @patch.object(task_tracker, 'read_from_file', return_value = None)
+    def test_file_empty_2(self, mock_file):
+        self.assertTrue(task_tracker.file_empty('tasks.json'))   
+
+    @patch.object(task_tracker, 'read_from_file', return_value = [{'id':1}])
+    def test_file_empty_3(self, mock_file):
+        self.assertFalse(task_tracker.file_empty('tasks.json'))
 
 ##############################
 # def update_task(file_tasks, change_idx, data_change, key) -> list:

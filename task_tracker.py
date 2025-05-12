@@ -2,14 +2,10 @@ import json
 import re
 import os.path
 import datetime
-'''
-todo list:
-		printing output
-		index out of bounds error
-'''
+
 def main() -> None:
-	file = "tasks.json" # if change, change in test_cases.py
-	if file_exists(file) and not file_empty(file):
+	file = "tasks.json" # refactor in test_cases.py aswell
+	if file_exists(file) and not file_empty(file): # ensure an existing non-empty file 
 		curr_id = find_id(file) + 1
 	else:
 		write_to_file(file, [])
@@ -33,10 +29,11 @@ def main() -> None:
 
 			elif primary_keyword == 'update':
 				if empty_variable([change_idx, description]):
-					raise TypeError(f"Index={change_idx} or Description={description}, invalid input")
+					raise TypeError(f"Index={change_idx}, Description={description}, invalid input")
 				
 				file_tasks = read_from_file(file)
 				arranged_tasks = update_task(file_tasks, change_idx, description, 'description')
+
 				write_to_file(file, arranged_tasks)
 				print(f'Task updated (ID: {change_idx})')
 
@@ -46,6 +43,7 @@ def main() -> None:
 				
 				file_tasks = read_from_file(file)
 				arranged_tasks = update_task(file_tasks, change_idx, secondary_keyword, 'status')
+
 				write_to_file(file, arranged_tasks)
 				print(f'Task updated (ID: {change_idx})')
 
@@ -55,6 +53,7 @@ def main() -> None:
 				
 				file_tasks = read_from_file(file)
 				arranged_tasks = delete_task(file_tasks, change_idx)
+
 				write_to_file(file, arranged_tasks)	
 				print(f'Task deleted')
 
@@ -71,12 +70,14 @@ def main() -> None:
 		except TypeError as e:
 			print(str(e))
 
+# given index, delete specified task
 def delete_task(file_tasks: list, change_idx) -> list:
 	for i in range(0, len(file_tasks)-1):
 		if file_tasks[i]['id'] == change_idx:
 			del file_tasks[i]
 	return file_tasks
 
+# given index, change status or description
 def update_task(file_tasks, change_idx, data_change, key) -> list:
 	for task in file_tasks:
 		if task['id'] == change_idx:
@@ -85,16 +86,19 @@ def update_task(file_tasks, change_idx, data_change, key) -> list:
 			task['updatedAt'] = formatted_time
 	return file_tasks
 
+# get and format date and time
 def get_time():
 	curr_time = datetime.datetime.now()
 	return curr_time.strftime("%b %d %Y %H:%M:%S")
 
+# ensure no variable is of None type, or equivalent state
 def empty_variable(necessary_input_list: list):
 	for necessary_input in necessary_input_list:
 		if necessary_input == None:
 			return True
 	return False
 
+# create task, as dict
 def add_task(description, curr_id) -> dict:
 	formatted_time = get_time()
 	new_task = {
@@ -106,34 +110,36 @@ def add_task(description, curr_id) -> dict:
 	}
 	return new_task
 
-
+# print tasks, listing index and description
 def print_tasks(tasks_dict):
 	for idx, description in tasks_dict.items():
 		print(f'{idx}. {description}')
 
+# return tasks to list, given criteria (done, in-progress, todo) or assuming all
 def list_tasks(file, secondary_keyword) -> dict:
-	tasks = read_from_file(file)
 	if secondary_keyword == None:
 		secondary_keyword = ['done', 'todo', 'in-progress']
 	elif secondary_keyword not in ['done', 'todo', 'in-progress']:
-		raise TypeError(f"secondary_keyword={secondary_keyword} is an invalid input")
-	task_dict = {}
+		raise TypeError(f"secondary_keyword={secondary_keyword}, invalid input")
+	
+	tasks = read_from_file(file)
+	tasks_dict = {}
 	for task in tasks:
 		if task['status'] in secondary_keyword:
-			task_dict[task['id']] = task['description']
-	return task_dict
+			tasks_dict[task['id']] = task['description']
+	return tasks_dict
 
+# ensure file is not empty
 def file_empty(file) -> bool:
 	tasks = read_from_file(file)
-	return is_empty(tasks)
-
-def is_empty(tasks) -> bool:
 	return not tasks
 
+# merge tasks in file with created task
 def merge_tasks(file_tasks, new_task) -> list:
 	file_tasks.append(new_task)
 	return file_tasks
 
+# find largest id in file
 def find_id(file) -> int|None: 
 	tasks = read_from_file(file)
 	max_idx = 0
@@ -142,6 +148,7 @@ def find_id(file) -> int|None:
 			max_idx = task["id"]
 	return max_idx
 
+# ensure file exists
 def file_exists(file) -> bool: 
 	if not os.path.isfile(file):
 		write_to_file(file, [])
@@ -149,50 +156,50 @@ def file_exists(file) -> bool:
 	return True
 
 def get_input() -> str: 
-	user_input = input()
-	if user_input:
-		return user_input
-	print("Invalid Input")
-	exit()
+	return input()
 
+# breakdown user input into tokens
 def breakdown_input(user_input) -> list[str|None, str|None, int|None, str|None]: 
 	primary_keyword, secondary_keyword= breakdown_keywords(user_input)
 	idx = breakdown_idx(user_input)
 	description = breakdown_description(user_input)
 	return primary_keyword, secondary_keyword, idx, description
 
+# from user input, return index
 def breakdown_idx(user_input) -> int|None: 
-	# regex matches numbers after the first word but before an apostrophe or quotation mark
+	# regex cleans keyword, [a-z], then cleans secondary_keyword, [a-z] including hyphens
 	regex_dict = {0: r'^[a-z]+', 1: r'^[a-z]+(?:-\w+)*'}
 	cleaned = user_input
 	for i in range(0, 2):
 		try:
 			cleaned = re.sub(regex_dict[i], '', cleaned)
-			cleaned = re.sub(r'^\s', '', cleaned)
+			cleaned = re.sub(r'^\s', '', cleaned) # strip whitespace after word
 		except: 
 			continue
 
-	idx = re.match(r"^(\d+)(?=['\"]?)", cleaned)
-	return None if not idx else int(idx.group(0))
+	idx = re.match(r"^\d+", cleaned) # matches a number
+	return None if not idx else int(idx.group(0)) # return None if idx has no value, else return idx
 
+# from user input, return description
 def breakdown_description(user_input) -> str|None: 
-	# regex matches all between apostrophes or quotation marks
+	# regex matches text between apostrophes or quotation marks
 	description = re.findall(r"(?<=['\"])(.*?)(?=['\"])", user_input)
-	return None if not description else ''.join(description)
-
+	return None if not description else ''.join(description) # return None if description has no value, else return description
+# from user input return keywords
 def breakdown_keywords(user_input) -> list[str|None, str|None]: 
 	# regex - matches first word
 	primary_keyword = re.match(r'^[a-z]+', user_input)
-	try:
+	try: # try to find a secondary keyword
 		cleaned = re.sub(r'^[a-z]+', '', user_input) # strip first word
 		cleaned = re.sub(r'^\s', '', cleaned) # strip whitespace after first word
-		secondary_keyword = re.match(r'^[a-z]+(?:-\w+)*', cleaned)
-	except:
-		return [None, None] if not primary_keyword else [primary_keyword.group(0), None]
+		secondary_keyword = re.match(r'^[a-z]+(?:-\w+)*', cleaned) # match word, include hyphen
+	except: # only runs when there is no secondary_keyword
+		return [None, None] if not primary_keyword else [primary_keyword.group(0), None] # return [None, None] if primary_keyword has no value, else return [primary_keyword, None]
 
-	primary_keyword = None if not primary_keyword else primary_keyword.group(0)
-	secondary_keyword = None if not secondary_keyword else secondary_keyword.group(0)
+	primary_keyword = None if not primary_keyword else primary_keyword.group(0) # return None if primary_keyword has no value, else return primary_keyword
+	secondary_keyword = None if not secondary_keyword else secondary_keyword.group(0) # return None if secondary_keyword has no value, else return secondary_keyword
 	return primary_keyword, secondary_keyword
+
 
 def write_to_file(file, data) -> None: 
 	with open(file, 'w') as f:
