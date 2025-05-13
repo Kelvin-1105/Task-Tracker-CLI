@@ -98,7 +98,7 @@ def update_task(file_tasks, change_idx, data_change, key) -> list:
 	for task in file_tasks:
 		if task['id'] == change_idx:
 			formatted_time = get_time()
-			task[key] = data_change
+			task[key] = data_change # key is hard-coded when calling method, either status or description
 			task['updatedAt'] = formatted_time
 	return file_tasks
 
@@ -160,15 +160,15 @@ def populate_ids(file) -> list[dict, int|None]:
 	tasks = read_from_file(file)
 	valid_ids = {}
 	curr_id = 0
-	try: 
+	try: # non-empty file may still not contain an id
 		for task in tasks:
-			if task['id'] not in valid_ids:
-				valid_ids[task['id']] = None
-			if task["id"] > curr_id:
+			if task['id'] not in valid_ids: # fill valid_ids dict
+				valid_ids[task['id']] = None 
+			if task["id"] > curr_id: # find greatest used index
 				curr_id = task["id"]
 	except: 
-		return {}, 1 # edge case
-	return valid_ids, curr_id + 1
+		return {}, 1 # default
+	return valid_ids, curr_id + 1 # turn curr_id to next_id
 
 # ensure file exists
 def file_exists(file) -> bool: 
@@ -189,6 +189,7 @@ def breakdown_input(user_input) -> list[str|None, str|None, int|None, str|None]:
 # from user input, return index
 def breakdown_idx(user_input) -> int|None: 
 	# regex cleans keyword, [a-z], then cleans secondary_keyword, [a-z] including hyphens
+	# index may come before or after secondary_keyword
 	regex_dict = {0: r'^[a-z]+', 1: r'^[a-z]+(?:-\w+)*'}
 	cleaned = user_input
 	for i in range(0, 2):
@@ -206,6 +207,7 @@ def breakdown_description(user_input) -> str|None:
 	# regex matches text between apostrophes or quotation marks
 	description = re.findall(r"(?<=['\"])(.*?)(?=['\"])", user_input)
 	return None if not description else ''.join(description) # return None if description has no value, else return description
+
 # from user input return keywords
 def breakdown_keywords(user_input) -> list[str|None, str|None]: 
 	# regex - matches first word
