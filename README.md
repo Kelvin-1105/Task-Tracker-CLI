@@ -7,3 +7,5 @@ Update task: `update {index} "{new_description}"`\
 Mark task: `mark {todo, done, in-progress}`\
 Delete task: `delete {index}`\
 List tasks: `list {None: lists all tasks, todo, done, in-progress}`
+
+> Based on [Task Tracker CLI](https://roadmap.sh/projects/task-tracker) Project
