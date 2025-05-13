@@ -5,74 +5,90 @@ import datetime
 
 def main() -> None:
 	file = "tasks.json" # refactor in test_cases.py aswell
-	if file_exists(file) and not file_empty(file): # ensure an existing non-empty file 
-		curr_id = find_id(file) + 1
-	else:
-		write_to_file(file, [])
-		curr_id = 1
 
-	while True:
-		try:
-			primary_keyword, secondary_keyword, change_idx, description = breakdown_input(get_input())
+	if file_exists(file) and not file_empty(file): # ensure an existing non-empty file 
+		valid_ids, next_id = populate_ids(file) # increment the largest id in file
+
+	else: # if file doesn't exist or is empty
+		write_to_file(file, []) # create or use existing file and write a list
+		next_id = 1 
+		valid_ids = {}
+
+	while True: # only quit program with input of 'esc' 
+		try: # safely handle errors
+
+			primary_keyword, secondary_keyword, change_idx, description = breakdown_input(get_input()) # tokenized input
 			
-			if primary_keyword == 'add':
+			if primary_keyword == 'add': # add functionality
 				if empty_variable([description]):
-					raise TypeError(f"Description={description}, invalid input")
+					raise TypeError(f"Description={description}, invalid input") # run error if necessary variable is empty
 				
-				new_task = add_task(description, curr_id)
-				file_tasks = read_from_file(file)
+				new_task = add_task(description, next_id) # creates a task as dict
+				file_tasks = read_from_file(file) 
 				merged_tasks = merge_tasks(file_tasks, new_task)
 
 				write_to_file(file, merged_tasks)
-				print(f'Task added successfully (ID: {curr_id})')
-				curr_id += 1 
+				print(f'Task added successfully (ID: {next_id})') # update user via terminal
+				valid_ids[next_id] = None
+				next_id += 1 # increment id for next task addition
 
-			elif primary_keyword == 'update':
-				if empty_variable([change_idx, description]):
-					raise TypeError(f"Index={change_idx}, Description={description}, invalid input")
+			elif primary_keyword == 'update': # update functionality, change description value
+				if empty_variable([change_idx, description]) or not valid_id(valid_ids, change_idx) or not description: 
+					raise TypeError(f"Index={change_idx}, Description={description}, invalid input") #
 				
 				file_tasks = read_from_file(file)
-				arranged_tasks = update_task(file_tasks, change_idx, description, 'description')
+				arranged_tasks = update_task(file_tasks, change_idx, description, 'description') # pre-typed variable 'description', changes ['description']: value
 
 				write_to_file(file, arranged_tasks)
-				print(f'Task updated (ID: {change_idx})')
+				print(f'Task updated (ID: {change_idx})') #
 
-			elif primary_keyword == 'mark':
-				if empty_variable([change_idx, secondary_keyword]):
-					raise TypeError(f"index={change_idx} or secondary_keyword={secondary_keyword}, invalid input")
+			elif primary_keyword == 'mark': # mark functionality, change status value
+				if empty_variable([change_idx, secondary_keyword]) or not valid_id(valid_ids, change_idx) and not valid_secondary_keyword(secondary_keyword):
+					raise TypeError(f"index={change_idx}, secondary_keyword={secondary_keyword}, invalid input") # 
 				
 				file_tasks = read_from_file(file)
-				arranged_tasks = update_task(file_tasks, change_idx, secondary_keyword, 'status')
+				arranged_tasks = update_task(file_tasks, change_idx, secondary_keyword, 'status') # pre-typed variable 'status', changes ['status']: value
 
 				write_to_file(file, arranged_tasks)
-				print(f'Task updated (ID: {change_idx})')
+				print(f'Task updated (ID: {change_idx})') #
 
-			elif primary_keyword == 'delete':
-				if empty_variable(change_idx):
-					raise TypeError(f"Index={change_idx}, invalid input")		
+			elif primary_keyword == 'delete': # delete task functionality
+				if empty_variable([change_idx]) or not valid_id(valid_ids, change_idx):
+					raise TypeError(f"Index={change_idx}, invalid input") #
 				
 				file_tasks = read_from_file(file)
-				arranged_tasks = delete_task(file_tasks, change_idx)
+				arranged_tasks = delete_task(file_tasks, change_idx) # deletes task with specified index
 
+				del valid_ids[change_idx]
 				write_to_file(file, arranged_tasks)	
-				print(f'Task deleted')
+				print(f'Task deleted') #
 
-			elif primary_keyword == 'list':
-				tasks_dict = list_tasks(file, secondary_keyword)
-				print_tasks(tasks_dict)
+			elif primary_keyword == 'list': # list tasks functionality
+				if not valid_secondary_keyword(secondary_keyword) and secondary_keyword != None:
+					raise TypeError(f'secondary_keyword={secondary_keyword}, invalid input') #
+				tasks_dict = list_tasks(file, secondary_keyword) # return dict of matching tasks, given secondary_keyword
+				print_tasks(tasks_dict) # format printing given dict
 
 			elif primary_keyword == 'esc':
-				exit()
+				exit() # escape program functionality
 
 			else:
-				raise TypeError(f"primary_keyword={primary_keyword}, invalid input")
+				raise TypeError(f"primary_keyword={primary_keyword}, invalid input") # if primary_keyword doesn't match any usecase
 			
 		except TypeError as e:
-			print(str(e))
+			print(str(e) + '\n')
+
+# ensure secondary_keyword is a status (runs only during mark)
+def valid_secondary_keyword(secondary_keyword:str) -> bool:
+	return secondary_keyword in ['done', 'todo', 'in-progress']
+
+# ensure changing index is an existing one
+def valid_id(valid_ids: dict, change_idx: int) -> bool:
+	return change_idx in valid_ids
 
 # given index, delete specified task
 def delete_task(file_tasks: list, change_idx) -> list:
-	for i in range(0, len(file_tasks)-1):
+	for i in range(0, len(file_tasks)):
 		if file_tasks[i]['id'] == change_idx:
 			del file_tasks[i]
 	return file_tasks
@@ -99,10 +115,10 @@ def empty_variable(necessary_input_list: list):
 	return False
 
 # create task, as dict
-def add_task(description, curr_id) -> dict:
+def add_task(description, next_id) -> dict:
 	formatted_time = get_time()
 	new_task = {
-		"id": curr_id,
+		"id": next_id,
 		"description": description,
 		"status": "todo",
 		"createdAt": formatted_time,
@@ -114,6 +130,7 @@ def add_task(description, curr_id) -> dict:
 def print_tasks(tasks_dict):
 	for idx, description in tasks_dict.items():
 		print(f'{idx}. {description}')
+	print()
 
 # return tasks to list, given criteria (done, in-progress, todo) or assuming all
 def list_tasks(file, secondary_keyword) -> dict:
@@ -131,8 +148,7 @@ def list_tasks(file, secondary_keyword) -> dict:
 
 # ensure file is not empty
 def file_empty(file) -> bool:
-	tasks = read_from_file(file)
-	return not tasks
+	return not read_from_file(file)
 
 # merge tasks in file with created task
 def merge_tasks(file_tasks, new_task) -> list:
@@ -140,18 +156,23 @@ def merge_tasks(file_tasks, new_task) -> list:
 	return file_tasks
 
 # find largest id in file
-def find_id(file) -> int|None: 
+def populate_ids(file) -> list[dict, int|None]: 
 	tasks = read_from_file(file)
-	max_idx = 0
-	for task in tasks:
-		if task["id"] > max_idx:
-			max_idx = task["id"]
-	return max_idx
+	valid_ids = {}
+	curr_id = 0
+	try: 
+		for task in tasks:
+			if task['id'] not in valid_ids:
+				valid_ids[task['id']] = None
+			if task["id"] > curr_id:
+				curr_id = task["id"]
+	except: 
+		return {}, 1 # edge case
+	return valid_ids, curr_id + 1
 
 # ensure file exists
 def file_exists(file) -> bool: 
 	if not os.path.isfile(file):
-		write_to_file(file, [])
 		return False
 	return True
 

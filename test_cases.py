@@ -90,6 +90,13 @@ class TestMain(unittest.TestCase):
         self.assertEqual(task_tracker.breakdown_input("list in-progress"), ('list', 'in-progress', None, None))
 
 ##############################
+# def valid_secondary_keyword(secondary_keyword:str) -> bool:
+##############################
+    # def test_valid_secondary_keyword(self):
+    #     with self.assertRaises(TypeError):
+    #         self.assertEqual(task_tracker.valid_secondary_keyword('not_valid'))
+
+##############################
 # def merge_tasks(file_tasks, new_task) -> list: 
 ##############################
     def test_merge_tasks(self):
@@ -131,24 +138,58 @@ class TestMain(unittest.TestCase):
                 )
 
 #############################
-# def find_id(file) -> int: 
+# def populate_ids(file) -> int: 
 #############################
     @patch.object(task_tracker, 'read_from_file', return_value=[{'id': 1}, {'id': 2}, {'id': 3},{'id': 5},{'id': 7}])
-    def test_find_id(self, mock_method): 
-        self.assertEqual(task_tracker.find_id("tasks.json"), 7)
-
-##############################
-# def file_exists(file) -> bool:
-##############################
-    @patch("os.path.isfile")
-    def test_file_exists(self, mock_file):
-        mock_file.return_value = True
-        self.assertTrue(task_tracker.file_exists("tasks.json"))
+    def test_populate_ids(self, mock_method): 
+        self.assertEqual(task_tracker.populate_ids("tasks.json"), ({1:None, 2:None, 3:None, 5:None, 7:None}, 8))
     
-    @patch("os.path.isfile")
-    def test_file_exists_2(self, mock_file):
-        mock_file.return_value = False
-        self.assertFalse(task_tracker.file_exists("tasks.json"))
+    @patch.object(task_tracker, 'read_from_file', return_value=[{}])
+    def test_populate_ids_2(self, mock_method): 
+        self.assertEqual(task_tracker.populate_ids("tasks.json"), ({}, 1))
+    
+    @patch.object(task_tracker, 'read_from_file', return_value=None)
+    def test_populate_ids_3(self, mock_method): 
+        self.assertEqual(task_tracker.populate_ids("tasks.json"), ({}, 1))
+
+    @patch.object(task_tracker, 'read_from_file', return_value=[])
+    def test_populate_ids_4(self, mock_method): 
+        self.assertEqual(task_tracker.populate_ids("tasks.json"), ({}, 1))
+
+    @patch.object(task_tracker, 'read_from_file', return_value=[{'id': 1}])
+    def test_populate_ids_5(self, mock_method): 
+        self.assertEqual(task_tracker.populate_ids("tasks.json"), ({1:None}, 2))
+
+    @patch.object(task_tracker, 'read_from_file', return_value=[{'id': 1}, {'id': 2}, {'id': 3},{'id': 5},{'id': 99999999999999999999999999998}])
+    def test_populate_ids_6(self, mock_method): 
+        self.assertEqual(task_tracker.populate_ids("tasks.json"), ({1:None, 2:None, 3:None, 5:None, 99999999999999999999999999998:None}, 99999999999999999999999999999))
+
+#############################
+# def valid_id(valid_ids: dict, change_idx: int) -> bool: 
+#############################
+    def test_valid_id(self):
+        self.assertTrue(task_tracker.valid_id({1,2,3}, 2))
+
+    def test_valid_id_2(self):
+        self.assertFalse(task_tracker.valid_id({1,2,3}, 4))
+        
+    def test_valid_id_3(self):
+        self.assertTrue(task_tracker.valid_id({1,2,99999999999}, 99999999999))
+
+#############################
+# def valid_secondary_keyword(secondary_keyword:str) -> bool:
+#############################
+    def test_valid_secondary_keyword(self):
+        self.assertFalse('fadfasfaf')
+
+    def test_valid_secondary_keyword(self):
+        self.assertTrue('done')
+
+    def test_valid_secondary_keyword(self):
+        self.assertTrue('in-progress')
+
+    def test_valid_secondary_keyword(self):
+        self.assertTrue('todo')
 
 ##############################
 # def file_empty(file) -> bool:
@@ -166,8 +207,22 @@ class TestMain(unittest.TestCase):
         self.assertFalse(task_tracker.file_empty('tasks.json'))
 
 ##############################
+# def file_exists(file) -> bool:
+##############################
+    @patch("os.path.isfile")
+    def test_file_exists(self, mock_file):
+        mock_file.return_value = True
+        self.assertTrue(task_tracker.file_exists("tasks.json"))
+    
+    @patch("os.path.isfile")
+    def test_file_exists_2(self, mock_file):
+        mock_file.return_value = False
+        self.assertFalse(task_tracker.file_exists("tasks.json"))
+
+##############################
 # def update_task(file_tasks, change_idx, data_change, key) -> list:
 ##############################
+
     @patch.object(task_tracker, 'get_time', return_value='May 09 2025 13:17:01')
     def test_update_task(self, mock_method):
         self.assertEqual(task_tracker.update_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 3, 'done', 'status'), [{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'done', 'updatedAt': 'May 09 2025 13:17:01'}])
@@ -183,6 +238,11 @@ class TestMain(unittest.TestCase):
     @patch.object(task_tracker, 'get_time', return_value='May 09 2025 13:17:01')
     def test_update_task_4(self, mock_method):
         self.assertEqual(task_tracker.update_task([{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car'}], 3, 'wash car and clean interior', 'description'), [{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car and clean interior', 'updatedAt': 'May 09 2025 13:17:01'}])
+
+    # @patch.object(task_tracker, 'get_time', return_value='May 09 2025 13:17:01')
+    # def test_update_task_5(self, mock_method):
+    #     with self.assertRaises(TypeError):
+    #         self.assertEqual(task_tracker.update_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 433, 'done', 'status'), [{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}])
 
 ##############################
 # def delete_task(file_tasks: list, change_idx) -> list:

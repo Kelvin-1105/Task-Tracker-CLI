@@ -1,7 +1,6 @@
-import datetime 
+secondary_keyword = 'done'
 
-time = datetime.datetime.now()
-print(repr(time))
-print(type(time))
-
-# print(datetime.datetime.now().strftime("%b %d %Y %H:%M:%S"))
+if secondary_keyword not in ['done', 'todo', 'in-progress']:
+	print('Run if error')
+else:
+	print(True)
