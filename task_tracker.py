@@ -87,14 +87,14 @@ def valid_id(valid_ids: dict, change_idx: int) -> bool:
 	return change_idx in valid_ids
 
 # given index, delete specified task
-def delete_task(file_tasks: list, change_idx) -> list:
+def delete_task(file_tasks: list, change_idx: int) -> list:
 	for i in range(0, len(file_tasks)):
 		if file_tasks[i]['id'] == change_idx:
 			del file_tasks[i]
-	return file_tasks
+			return file_tasks
 
 # given index, change status or description
-def update_task(file_tasks, change_idx, data_change, key) -> list:
+def update_task(file_tasks: list, change_idx: int, data_change: str, key: str) -> list:
 	for task in file_tasks:
 		if task['id'] == change_idx:
 			formatted_time = get_time()
@@ -103,19 +103,19 @@ def update_task(file_tasks, change_idx, data_change, key) -> list:
 	return file_tasks
 
 # get and format date and time
-def get_time():
+def get_time() -> str:
 	curr_time = datetime.datetime.now()
 	return curr_time.strftime("%b %d %Y %H:%M:%S")
 
 # ensure no variable is of None type, or equivalent state
-def empty_variable(necessary_input_list: list):
+def empty_variable(necessary_input_list: list) -> bool:
 	for necessary_input in necessary_input_list:
 		if necessary_input == None:
 			return True
 	return False
 
 # create task, as dict
-def add_task(description, next_id) -> dict:
+def add_task(description: str, next_id: int) -> dict:
 	formatted_time = get_time()
 	new_task = {
 		"id": next_id,
@@ -127,13 +127,13 @@ def add_task(description, next_id) -> dict:
 	return new_task
 
 # print tasks, listing index and description
-def print_tasks(tasks_dict):
+def print_tasks(tasks_dict: dict) -> None:
 	for idx, description in tasks_dict.items():
 		print(f'{idx}. {description}')
 	print()
 
 # return tasks to list, given criteria (done, in-progress, todo) or assuming all
-def list_tasks(file, secondary_keyword) -> dict:
+def list_tasks(file: str, secondary_keyword: str) -> dict:
 	if secondary_keyword == None:
 		secondary_keyword = ['done', 'todo', 'in-progress']
 	elif secondary_keyword not in ['done', 'todo', 'in-progress']:
@@ -147,16 +147,16 @@ def list_tasks(file, secondary_keyword) -> dict:
 	return tasks_dict
 
 # ensure file is not empty
-def file_empty(file) -> bool:
+def file_empty(file: str) -> bool:
 	return not read_from_file(file)
 
 # merge tasks in file with created task
-def merge_tasks(file_tasks, new_task) -> list:
+def merge_tasks(file_tasks: list, new_task: dict) -> list:
 	file_tasks.append(new_task)
 	return file_tasks
 
 # find largest id in file
-def populate_ids(file) -> list[dict, int|None]: 
+def populate_ids(file: str) -> list[dict, int|None]: 
 	tasks = read_from_file(file)
 	valid_ids = {}
 	curr_id = 0
@@ -171,7 +171,7 @@ def populate_ids(file) -> list[dict, int|None]:
 	return valid_ids, curr_id + 1 # turn curr_id to next_id
 
 # ensure file exists
-def file_exists(file) -> bool: 
+def file_exists(file: str) -> bool: 
 	if not os.path.isfile(file):
 		return False
 	return True
@@ -180,14 +180,14 @@ def get_input() -> str:
 	return input()
 
 # breakdown user input into tokens
-def breakdown_input(user_input) -> list[str|None, str|None, int|None, str|None]: 
+def breakdown_input(user_input: str) -> list[str|None, str|None, int|None, str|None]: 
 	primary_keyword, secondary_keyword= breakdown_keywords(user_input)
 	idx = breakdown_idx(user_input)
 	description = breakdown_description(user_input)
 	return primary_keyword, secondary_keyword, idx, description
 
 # from user input, return index
-def breakdown_idx(user_input) -> int|None: 
+def breakdown_idx(user_input: str) -> int|None: 
 	# regex cleans keyword, [a-z], then cleans secondary_keyword, [a-z] including hyphens
 	# index may come before or after secondary_keyword
 	regex_dict = {0: r'^[a-z]+', 1: r'^[a-z]+(?:-\w+)*'}
@@ -203,13 +203,13 @@ def breakdown_idx(user_input) -> int|None:
 	return None if not idx else int(idx.group(0)) # return None if idx has no value, else return idx
 
 # from user input, return description
-def breakdown_description(user_input) -> str|None: 
+def breakdown_description(user_input: str) -> str|None: 
 	# regex matches text between apostrophes or quotation marks
 	description = re.findall(r"(?<=['\"])(.*?)(?=['\"])", user_input)
 	return None if not description else ''.join(description) # return None if description has no value, else return description
 
 # from user input return keywords
-def breakdown_keywords(user_input) -> list[str|None, str|None]: 
+def breakdown_keywords(user_input: str) -> list[str|None, str|None]: 
 	# regex - matches first word
 	primary_keyword = re.match(r'^[a-z]+', user_input)
 	try: # try to find a secondary keyword
@@ -224,11 +224,11 @@ def breakdown_keywords(user_input) -> list[str|None, str|None]:
 	return primary_keyword, secondary_keyword
 
 
-def write_to_file(file, data) -> None: 
+def write_to_file(file: str, data: list) -> None: 
 	with open(file, 'w') as f:
 		json.dump(data, f, indent=2)
 
-def read_from_file(file) -> list|None: 
+def read_from_file(file: str) -> list|None: 
 	with open(file, 'r') as f: 
 		return json.load(f)
 

@@ -239,11 +239,6 @@ class TestMain(unittest.TestCase):
     def test_update_task_4(self, mock_method):
         self.assertEqual(task_tracker.update_task([{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car'}], 3, 'wash car and clean interior', 'description'), [{'id': 1, 'description': 'groceries'}, {'id': 3, 'description': 'wash car and clean interior', 'updatedAt': 'May 09 2025 13:17:01'}])
 
-    # @patch.object(task_tracker, 'get_time', return_value='May 09 2025 13:17:01')
-    # def test_update_task_5(self, mock_method):
-    #     with self.assertRaises(TypeError):
-    #         self.assertEqual(task_tracker.update_task([{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}], 433, 'done', 'status'), [{'id': 1, 'status': 'todo'}, {'id': 3, 'status': 'in-progress'}])
-
 ##############################
 # def delete_task(file_tasks: list, change_idx) -> list:
 ##############################
